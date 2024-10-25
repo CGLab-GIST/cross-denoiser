@@ -1,0 +1,20 @@
+services:
+  cross-denoiser:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+        USER_NAME: ${USER_NAME:-user}
+    image: cross-denoiser
+    container_name: cross-denoiser
+    runtime: nvidia
+    privileged: true
+    volumes:
+      - .:/home/${USER_NAME:-user}/cross-denoiser
+      # Modify this
+      - DATASET_DIR:/dataset
+    stdin_open: true
+    tty: true
+    command: bash
