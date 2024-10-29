@@ -1,6 +1,6 @@
 # Online Neural Denoising with Cross-Regression for Interactive Rendering
 
-### [📄 Paper](https://drive.google.com/file/d/1D62h2clLWmqmHTbBCqihfkYDdELf7XhY/view?usp=sharing) | [📄 Paper (low-res)](siga24_cross_denoiser_preprint_lowres.pdf) | [📁 Dataset](#-dataset)
+### [📄 Paper](https://drive.google.com/file/d/1D62h2clLWmqmHTbBCqihfkYDdELf7XhY/view?usp=sharing) | [📄 Paper (low-res)](siga24_cross_denoiser_preprint_lowres.pdf?raw=1) | [📁 Dataset](#-dataset)
 
 ![Online Neural Denoising with Cross-Regression for Interactive Rendering](banner.png)
 
