@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright 2024 CGLab, GIST.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -9,7 +9,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "tensorflow/core/framework/op.h"
@@ -56,7 +56,7 @@ REGISTER_OP("CrossRegression")
 
     return Status(); });
 
-REGISTER_OP("SpatiotemporalFilter")
+REGISTER_OP("SpatialFilter")
     .Input("imga: float")
     .Input("imgb: float")
     .Input("albedo: float")
@@ -85,7 +85,7 @@ REGISTER_OP("SpatiotemporalFilter")
 
     return Status(); });
 
-REGISTER_OP("SpatiotemporalFilterGrad")
+REGISTER_OP("SpatialFilterGrad")
     .Input("grad_acca: float")
     .Input("grad_accb: float")
     .Input("grad_wgtsuma: float")
@@ -108,19 +108,19 @@ void CrossRegressionFunc(const GPUDevice &_dev,
                          float4 *_betaA, float4 *_betaB,
                          int nBatch, int height, int width, int winSize, int sparsity, int reconScale);
 
-void SpatiotemporalFilterFunc(const GPUDevice &_dev, const float *_imga, const float *_imgb,
-                              const float *_albedo, const float *_normal, const float *_band,
-                              float *_outAccImgA, float *_outAccImgB, float *_outWgtSumA, float *_outWgtSumB,
-                              float4 *_gradBandA, float4 *_gradBandB,
-                              int nBatch, int height, int width, int winSize);
+void SpatialFilterFunc(const GPUDevice &_dev, const float *_imga, const float *_imgb,
+                       const float *_albedo, const float *_normal, const float *_band,
+                       float *_outAccImgA, float *_outAccImgB, float *_outWgtSumA, float *_outWgtSumB,
+                       float4 *_gradBandA, float4 *_gradBandB,
+                       int nBatch, int height, int width, int winSize);
 
-void SpatiotemporalFilterGradFunc(const GPUDevice &_dev, const float *_gradAccImgA, const float *_gradAccImgB,
-                                  const float *_gradWgtSumA, const float *_gradWgtSumB,
-                                  const float *_imga, const float *_imgb,
-                                  const float *_albedo, const float *_normal, const float *_band,
-                                  float *_outGradBand,
-                                  const float4 *_gradBandA, const float4 *_gradBandB,
-                                  int nBatch, int height, int width, int winSize);
+void SpatialFilterGradFunc(const GPUDevice &_dev, const float *_gradAccImgA, const float *_gradAccImgB,
+                           const float *_gradWgtSumA, const float *_gradWgtSumB,
+                           const float *_imga, const float *_imgb,
+                           const float *_albedo, const float *_normal, const float *_band,
+                           float *_outGradBand,
+                           const float4 *_gradBandA, const float4 *_gradBandB,
+                           int nBatch, int height, int width, int winSize);
 
 class CrossRegressionOp : public OpKernel
 {
@@ -198,10 +198,10 @@ private:
 Tensor *CrossRegressionOp::betaA = NULL;
 Tensor *CrossRegressionOp::betaB = NULL;
 
-class SpatiotemporalFilterInterface : public OpKernel
+class SpatialFilterInterface : public OpKernel
 {
 public:
-    explicit SpatiotemporalFilterInterface(OpKernelConstruction *context) : OpKernel(context)
+    explicit SpatialFilterInterface(OpKernelConstruction *context) : OpKernel(context)
     {
         context->GetAttr("win_size", &winSize);
     }
@@ -229,13 +229,13 @@ protected:
     static Tensor *gradBandA, *gradBandB;
 };
 
-Tensor *SpatiotemporalFilterInterface::gradBandA = NULL;
-Tensor *SpatiotemporalFilterInterface::gradBandB = NULL;
+Tensor *SpatialFilterInterface::gradBandA = NULL;
+Tensor *SpatialFilterInterface::gradBandB = NULL;
 
-class SpatiotemporalFilterOp : public SpatiotemporalFilterInterface
+class SpatialFilterOp : public SpatialFilterInterface
 {
 public:
-    explicit SpatiotemporalFilterOp(OpKernelConstruction *context) : SpatiotemporalFilterInterface(context)
+    explicit SpatialFilterOp(OpKernelConstruction *context) : SpatialFilterInterface(context)
     {
     }
 
@@ -272,18 +272,18 @@ public:
         float4 *gradBandAptr = reinterpret_cast<float4 *>(gradBandA->flat<float>().data());
         float4 *gradBandBptr = reinterpret_cast<float4 *>(gradBandB->flat<float>().data());
 
-        SpatiotemporalFilterFunc(context->eigen_device<GPUDevice>(),
-                                 imga.flat<float>().data(), imgb.flat<float>().data(),
-                                 albedo.flat<float>().data(), normal.flat<float>().data(), band.flat<float>().data(),
-                                 out_mat_accimga.data(), out_mat_accimgb.data(), out_mat_wgtsuma.data(), out_mat_wgtsumb.data(),
-                                 gradBandAptr, gradBandBptr,
-                                 img_shape.dim_size(0), img_shape.dim_size(1), img_shape.dim_size(2), winSize);
+        SpatialFilterFunc(context->eigen_device<GPUDevice>(),
+                          imga.flat<float>().data(), imgb.flat<float>().data(),
+                          albedo.flat<float>().data(), normal.flat<float>().data(), band.flat<float>().data(),
+                          out_mat_accimga.data(), out_mat_accimgb.data(), out_mat_wgtsuma.data(), out_mat_wgtsumb.data(),
+                          gradBandAptr, gradBandBptr,
+                          img_shape.dim_size(0), img_shape.dim_size(1), img_shape.dim_size(2), winSize);
     }
 };
-class SpatiotemporalFilterGradOp : public SpatiotemporalFilterInterface
+class SpatialFilterGradOp : public SpatialFilterInterface
 {
 public:
-    explicit SpatiotemporalFilterGradOp(OpKernelConstruction *context) : SpatiotemporalFilterInterface(context)
+    explicit SpatialFilterGradOp(OpKernelConstruction *context) : SpatialFilterInterface(context)
     {
     }
 
@@ -311,17 +311,17 @@ public:
         float4 *gradBandAptr = reinterpret_cast<float4 *>(gradBandA->flat<float>().data());
         float4 *gradBandBptr = reinterpret_cast<float4 *>(gradBandB->flat<float>().data());
 
-        SpatiotemporalFilterGradFunc(context->eigen_device<GPUDevice>(),
-                                     grad_acc_imga.flat<float>().data(), grad_acc_imgb.flat<float>().data(),
-                                     grad_wgt_suma.flat<float>().data(), grad_wgt_sumb.flat<float>().data(),
-                                     imga.flat<float>().data(), imgb.flat<float>().data(),
-                                     albedo.flat<float>().data(), normal.flat<float>().data(), band.flat<float>().data(),
-                                     out_mat_grad_band.data(),
-                                     gradBandAptr, gradBandBptr,
-                                     band_shape.dim_size(0), band_shape.dim_size(1), band_shape.dim_size(2), winSize);
+        SpatialFilterGradFunc(context->eigen_device<GPUDevice>(),
+                              grad_acc_imga.flat<float>().data(), grad_acc_imgb.flat<float>().data(),
+                              grad_wgt_suma.flat<float>().data(), grad_wgt_sumb.flat<float>().data(),
+                              imga.flat<float>().data(), imgb.flat<float>().data(),
+                              albedo.flat<float>().data(), normal.flat<float>().data(), band.flat<float>().data(),
+                              out_mat_grad_band.data(),
+                              gradBandAptr, gradBandBptr,
+                              band_shape.dim_size(0), band_shape.dim_size(1), band_shape.dim_size(2), winSize);
     }
 };
 
 REGISTER_KERNEL_BUILDER(Name("CrossRegression").Device(DEVICE_GPU), CrossRegressionOp);
-REGISTER_KERNEL_BUILDER(Name("SpatiotemporalFilter").Device(DEVICE_GPU), SpatiotemporalFilterOp);
-REGISTER_KERNEL_BUILDER(Name("SpatiotemporalFilterGrad").Device(DEVICE_GPU), SpatiotemporalFilterGradOp);
+REGISTER_KERNEL_BUILDER(Name("SpatialFilter").Device(DEVICE_GPU), SpatialFilterOp);
+REGISTER_KERNEL_BUILDER(Name("SpatialFilterGrad").Device(DEVICE_GPU), SpatialFilterGradOp);

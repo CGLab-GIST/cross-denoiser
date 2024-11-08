@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright 2024 CGLab, GIST.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -9,7 +9,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #define GOOGLE_CUDA
@@ -30,10 +30,10 @@ using GPUDevice = Eigen::GpuDevice;
 #define COEFFI_DIM_PILOT 6
 #define BAND_RANK 4
 
-__global__ void SpatiotemporalFilterGradKernel(float *_outGradBand, const float *_gradAccImgA, const float *_gradAccImgB,
-                                               const float *_gradWgtSumA, const float *_gradWgtSumB,
-                                               const float4 *_gradBandA, const float4 *_gradBandB,
-                                               int height, int width, int winSize)
+__global__ void SpatialFilterGradKernel(float *_outGradBand, const float *_gradAccImgA, const float *_gradAccImgB,
+                                        const float *_gradWgtSumA, const float *_gradWgtSumB,
+                                        const float4 *_gradBandA, const float4 *_gradBandB,
+                                        int height, int width, int winSize)
 {
     const int cx = IMAD(blockDim.x, blockIdx.x, threadIdx.x);
     const int cy = IMAD(blockDim.y, blockIdx.y, threadIdx.y);
@@ -81,10 +81,10 @@ __global__ void SpatiotemporalFilterGradKernel(float *_outGradBand, const float 
 }
 
 // Note: _gradBand for the backprop later
-__global__ void SpatiotemporalFilterKernel(float *_outAccImgA, float *_outAccImgB, float *_outWgtSumA, float *_outWgtSumB,
-                                           float4 *_gradBandA, float4 *_gradBandB,
-                                           const float *_imgA, const float *_imgB,
-                                           const float *_albedo, const float *_normal, const float *_band, int height, int width, int winSize)
+__global__ void SpatialFilterKernel(float *_outAccImgA, float *_outAccImgB, float *_outWgtSumA, float *_outWgtSumB,
+                                    float4 *_gradBandA, float4 *_gradBandB,
+                                    const float *_imgA, const float *_imgB,
+                                    const float *_albedo, const float *_normal, const float *_band, int height, int width, int winSize)
 {
     const int cx = IMAD(blockDim.x, blockIdx.x, threadIdx.x);
     const int cy = IMAD(blockDim.y, blockIdx.y, threadIdx.y);
@@ -499,38 +499,38 @@ void CrossRegressionFunc(const GPUDevice &_dev,
     BlockRecon<<<gridRecon, threads, 0, _dev.stream()>>>(_outImgB, _betaB, _imga, _imgb, _varB, _albedo, _normal, height, width, winSize, sparsity, reconScale);
 }
 
-void SpatiotemporalFilterFunc(const GPUDevice &_dev,
-                              // Input
-                              const float *_imga, const float *_imgb, const float *_albedo, const float *_normal, const float *_band,
-                              // Output
-                              float *_outAccImgA, float *_outAccImgB, float *_outWgtSumA, float *_outWgtSumB,
-                              // Intermediate
-                              float4 *_gradBandA, float4 *_gradBandB,
-                              int nBatch, int height, int width, int winSize)
+void SpatialFilterFunc(const GPUDevice &_dev,
+                       // Input
+                       const float *_imga, const float *_imgb, const float *_albedo, const float *_normal, const float *_band,
+                       // Output
+                       float *_outAccImgA, float *_outAccImgB, float *_outWgtSumA, float *_outWgtSumB,
+                       // Intermediate
+                       float4 *_gradBandA, float4 *_gradBandB,
+                       int nBatch, int height, int width, int winSize)
 {
     const int blockDim = 8;
     dim3 threads(blockDim, blockDim);
     dim3 grid(iDivUp(width, blockDim), iDivUp(height, blockDim));
 
-    SpatiotemporalFilterKernel<<<grid, threads, 0, _dev.stream()>>>(_outAccImgA, _outAccImgB, _outWgtSumA, _outWgtSumB, _gradBandA, _gradBandB,
-                                                                    _imga, _imgb, _albedo, _normal, _band, height, width, winSize);
+    SpatialFilterKernel<<<grid, threads, 0, _dev.stream()>>>(_outAccImgA, _outAccImgB, _outWgtSumA, _outWgtSumB, _gradBandA, _gradBandB,
+                                                             _imga, _imgb, _albedo, _normal, _band, height, width, winSize);
 }
 
-void SpatiotemporalFilterGradFunc(const GPUDevice &_dev, const float *_gradAccImgA, const float *_gradAccImgB,
-                                  const float *_gradWgtSumA, const float *_gradWgtSumB,
-                                  const float *_imga, const float *_imgb,
-                                  const float *_albedo, const float *_normal, const float *_band,
-                                  float *_outGradBand,
-                                  const float4 *_gradBandA, const float4 *_gradBandB,
-                                  int nBatch, int height, int width, int winSize)
+void SpatialFilterGradFunc(const GPUDevice &_dev, const float *_gradAccImgA, const float *_gradAccImgB,
+                           const float *_gradWgtSumA, const float *_gradWgtSumB,
+                           const float *_imga, const float *_imgb,
+                           const float *_albedo, const float *_normal, const float *_band,
+                           float *_outGradBand,
+                           const float4 *_gradBandA, const float4 *_gradBandB,
+                           int nBatch, int height, int width, int winSize)
 {
     const int blockDim = 8;
     dim3 threads(blockDim, blockDim);
     dim3 grid(iDivUp(width, blockDim), iDivUp(height, blockDim));
 
-    SpatiotemporalFilterGradKernel<<<grid, threads, 0, _dev.stream()>>>(_outGradBand, _gradAccImgA, _gradAccImgB, _gradWgtSumA, _gradWgtSumB,
-                                                                        _gradBandA, _gradBandB,
-                                                                        height, width, winSize);
+    SpatialFilterGradKernel<<<grid, threads, 0, _dev.stream()>>>(_outGradBand, _gradAccImgA, _gradAccImgB, _gradWgtSumA, _gradWgtSumB,
+                                                                 _gradBandA, _gradBandB,
+                                                                 height, width, winSize);
 }
 
 #endif // GOOGLE_CUDA

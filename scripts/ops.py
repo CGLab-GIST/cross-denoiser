@@ -16,19 +16,19 @@ import tensorflow as tf
 
 ####################################################################################################
 _module_regression = tf.load_op_library('./ops/regression.so')
-spatiotemporal_filter = _module_regression.spatiotemporal_filter
-spatiotemporal_filter_grad = _module_regression.spatiotemporal_filter_grad
+spatial_filter = _module_regression.spatial_filter
+spatial_filter_grad = _module_regression.spatial_filter_grad
 cross_regression = _module_regression.cross_regression
 
-@tf.RegisterGradient("SpatiotemporalFilter")
-def _spatiotemporal_filter_grad(op, grad_acc_imga, grad_acc_imgb, grad_wgt_suma, grad_wgt_sumb):    
+@tf.RegisterGradient("SpatialFilter")
+def _spatial_filter_grad(op, grad_acc_imga, grad_acc_imgb, grad_wgt_suma, grad_wgt_sumb):    
     imga = op.inputs[0]  
     imgb = op.inputs[1]  
     albedo = op.inputs[2]
     normal = op.inputs[3]
     band = op.inputs[4]  
     winSize = op.get_attr('win_size')        
-    grad_band = spatiotemporal_filter_grad(grad_acc_imga, grad_acc_imgb, grad_wgt_suma, grad_wgt_sumb, imga, imgb, albedo, normal, band, win_size=winSize)        
+    grad_band = spatial_filter_grad(grad_acc_imga, grad_acc_imgb, grad_wgt_suma, grad_wgt_sumb, imga, imgb, albedo, normal, band, win_size=winSize)        
     return [None, None, None, None, grad_band]
 
 ####################################################################################################

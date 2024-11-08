@@ -290,7 +290,7 @@ def train_step(d, prev_d):
 
                 with tf.xla.experimental.jit_scope(compile_ops=False):
                     ## Spatial filtering
-                    sum1, sum2, sumw1, sumw2 = spatiotemporal_filter(ols1, ols2, albedo, normal, band, win_size=FILTER_WIDTH)
+                    sum1, sum2, sumw1, sumw2 = spatial_filter(ols1, ols2, albedo, normal, band, win_size=FILTER_WIDTH)
 
                 ## Spatiotemporal + loss calculation
                 out_log, out, loss, avgLoss = aggregation_loss(sum1, sumw1, sum2, sumw2, alpha, success, success_prev, prev_out, opacity, label1, label2, prev_label1, prev_label2)
