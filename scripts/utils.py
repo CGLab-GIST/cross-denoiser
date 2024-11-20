@@ -46,22 +46,6 @@ class Var:
             d['index'] = tf.constant(d['index'])
         return d
 
-    def clone(self, set_zero=False):
-        new = Var()
-        for key, value in self.__dict__.items():
-            if isinstance(value, tf.Tensor):
-                if set_zero:
-                    new.__dict__[key] = tf.zeros_like(value)
-                else:
-                    new.__dict__[key] = tf.identity(value)
-            else:
-                new.__dict__[key] = np.copy(value)
-        return new
-
-    def pop(self, key):
-        return self.__dict__.pop(key)
-
-
 def load_exr(path):
     numpy_img = exr.read_all(path)["default"]
     # Add batch dim

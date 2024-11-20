@@ -240,7 +240,7 @@ def aggregation_loss(sum1, sumw1, sum2, sumw2, alpha, success, success_prev, pre
     temporal_loss = (tloss1 + tloss2) * 0.5
     
     ## Final loss
-    loss = spatial_loss * 0.5 + temporal_loss * 0.5
+    loss = (spatial_loss + temporal_loss) * 0.5
     loss *= opacity
 
     avgLoss = tf.reduce_mean(loss)
@@ -264,7 +264,7 @@ def train_step(d, prev_d):
             ## Reprojection
             with tf.xla.experimental.jit_scope(compile_ops=False):
                 success, reproj_out = Reproject(item.mvec, [prev_item.out_log, prev_item.ols1, prev_item.ols2], item.linearZ, prev_item.linearZ, item.normal, prev_item.normal, item.pnFwidth, item.ones1, item.ones1)
-                prev_out_old, prev_ols1, prev_ols2 = reproj_out
+                prev_out_old, prev_ols1_old, prev_ols2_old = reproj_out
 
             # Handle bilinear interpolation artifacts in reprojection
             success = tf.cast(success, tf.float32)
@@ -277,11 +277,13 @@ def train_step(d, prev_d):
 
             ## Additional temporal screening for temporal label/prev_out
             with tf.xla.experimental.jit_scope(compile_ops=False):
-                prev_out, prev_label1, prev_label2, success_prev = temporal_screening(ols1, ols2, prev_out_old, prev_ols1, prev_ols2, success, win_curr=7, win_prev=1)
+                prev_out, prev_ols1, prev_ols2, success_prev = temporal_screening(ols1, ols2, prev_out_old, prev_ols1_old, prev_ols2_old, success, win_curr=7, win_prev=1)
 
         ## Set label
         label1 = ols2
         label2 = ols1
+        prev_label1 = prev_ols2
+        prev_label2 = prev_ols1
 
         with tf.name_scope("spatiotemporal"):
             with tf.GradientTape() as g:
