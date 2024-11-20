@@ -15,6 +15,8 @@
 
 This is the official implementation for the paper titled **"Online Neural Denoising with Cross-Regression for Interactive Rendering"** in *ACM Transactions on Graphics (Proceedings of the SIGGRAPH Asia 2024)*.
 
+PyTorch version of the code is also available. Check out the [torch](https://github.com/CGLab-GIST/cross-denoiser/tree/torch) branch.
+
 ## ⚙️ Prerequisites
 
 ### 🖥️ Tested Environments
