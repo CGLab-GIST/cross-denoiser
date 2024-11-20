@@ -1,0 +1,20 @@
+services:
+  cross-denoiser-torch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+        USER_NAME: ${USER_NAME:-user}
+    image: cross-denoiser-torch
+    container_name: cross-denoiser-torch
+    runtime: nvidia
+    privileged: true
+    volumes:
+      - .:/home/${USER_NAME:-user}/cross-denoiser-torch
+      # Modify this
+      - ./dataset_small:/dataset
+    stdin_open: true
+    tty: true
+    command: bash
