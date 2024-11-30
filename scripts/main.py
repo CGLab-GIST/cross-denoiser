@@ -163,7 +163,7 @@ def train_step(item, prev_item):
 
     prev_out, prev_ols1, prev_ols2, success_prev = ops.TemporalScreening.apply(ols1, ols2, prev_out_old, prev_ols1_old, prev_ols2_old, success, 7, 1)
 
-    band, alpha = model(color, color2, prev_out, albedo, normal)
+    band, alpha = model(ols1, ols2, prev_out, albedo, normal)
 
     sum1, sum2, sumw1, sumw2 = ops.SpatialFilter.apply(ols1, ols2, albedo, normal, band, FILTER_WIDTH)
 
