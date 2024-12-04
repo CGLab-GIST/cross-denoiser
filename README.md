@@ -17,6 +17,8 @@ This is the official implementation for the paper titled **"Online Neural Denois
 
 PyTorch version of the code is also available. Check out the [torch](https://github.com/CGLab-GIST/cross-denoiser/tree/torch) branch.
 
+An interactive demo implemented on Falcor will soon be available on the `falcor` branch.
+
 ## ⚙️ Prerequisites
 
 ### 🖥️ Tested Environments
