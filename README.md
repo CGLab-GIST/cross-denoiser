@@ -7,17 +7,13 @@
 **Authors:**  
 [Hajin Choi](https://hajinchoi.me), Seokpyo Hong, Inwoo Ha, Nahyup Kang, [Bochang Moon](https://cglab.gist.ac.kr/people/bochang.html)
 
-<!-- ## Citation
-```bibtex
-``` -->
-
 ---
 
 This is the official implementation for the paper titled **"Online Neural Denoising with Cross-Regression for Interactive Rendering"** in *ACM Transactions on Graphics (Proceedings of the SIGGRAPH Asia 2024)*.
 
-PyTorch version of the code is also available. Check out the [torch](https://github.com/CGLab-GIST/cross-denoiser/tree/torch) branch.
-
-An interactive demo implemented on Falcor will soon be available on the `falcor` branch.
+**[Updates]**  
+(Nov. 20, 2024) PyTorch version of the code is also available. Check out the [torch](https://github.com/CGLab-GIST/cross-denoiser/tree/torch) branch.  
+(Dec. 10, 2024) An interactive demo implemented on Falcor will soon be available on the `falcor` branch.
 
 ## ⚙️ Prerequisites
 
@@ -125,3 +121,25 @@ We thank the anonymous reviewers for their valuable feedback during the review p
 
 ## License
 All source codes are released under a BSD License.
+
+
+## Citation
+```bibtex
+@article{choi24cross,
+  author     = {Choi, Hajin and Hong, Seokpyo and Ha, Inwoo and Kang, Nahyup and Moon, Bochang},
+  title      = {Online Neural Denoising with Cross-Regression for Interactive Rendering},
+  year       = {2024},
+  issue_date = {December 2024},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {43},
+  number     = {6},
+  issn       = {0730-0301},
+  url        = {https://doi.org/10.1145/3687938},
+  doi        = {10.1145/3687938},
+  journal    = {ACM Trans. Graph.},
+  month      = nov,
+  articleno  = {221},
+  numpages   = {12}
+}
+```
