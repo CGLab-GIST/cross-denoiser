@@ -172,7 +172,7 @@ def train_step(item, prev_item):
     out = (sum1 + sum2) / (sumw1 + sumw2 + 1e-4)
 
     opacity = torch.where(item.opacity > 0, 1.0, 0.0)
-    succes = success * success_prev
+    success = success * success_prev
     alpha = success * alpha + (1 - success)
     out_log = alpha * out + (1 - alpha) * prev_out
     out_log *= opacity
