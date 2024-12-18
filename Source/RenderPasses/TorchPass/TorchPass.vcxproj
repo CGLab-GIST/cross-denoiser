@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6B5D86F8-642A-4794-B14F-D9B15EDBFFED}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>TorchPass</RootNamespace>
+    <ProjectName>TorchPass</ProjectName>
+    <CudaToolkitCustomDir>$(SolutionDir)Source\Externals\.packman\cuda</CudaToolkitCustomDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+    <ShaderSourceSubDir>Shaders\RenderPasses\$(ProjectName)</ShaderSourceSubDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+    <ShaderSourceSubDir>Shaders\RenderPasses\$(ProjectName)</ShaderSourceSubDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(SolutionDir)Source\Externals\.packman\cuda\extras\visual_studio_integration\MSBuildExtensions\CUDA 11.8.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\Samples\CudaInterop\FalcorCUDA.props" />
+    <Import Project="..\..\Falcor\Falcor.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\Samples\CudaInterop\FalcorCUDA.props" />
+    <Import Project="..\..\Falcor\Falcor.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>PROJECT_DIR=R"($(ProjectDir))";WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4819</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(FALCOR_CORE_DIRECTORY)\Externals\.packman\libtorchd\include;$(FALCOR_CORE_DIRECTORY)\Externals\.packman\libtorchd\include\torch\csrc\api\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>cuda.lib;cudart.lib;asmjit.lib;c10.lib;c10_cuda.lib;caffe2_nvrtc.lib;cpuinfo.lib;dnnl.lib;fbgemm.lib;fmtd.lib;kineto.lib;libprotobufd.lib;libprotobuf-lited.lib;libprotocd.lib;pthreadpool.lib;sleef.lib;torch.lib;torch_cpu.lib;torch_cuda.lib;XNNPACK.lib;-INCLUDE:?warp_size@cuda@at@@YAHXZ;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(FALCOR_CORE_DIRECTORY)\Externals\.packman\libtorchd\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <AdditionalCompilerOptions>/wd4819 /wd4244 /wd4005 /wd4067 /wd4267 /wd4805 /wd4251 /wd4624 /wd4275</AdditionalCompilerOptions>
+      <AdditionalOptions>--std=c++17 %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>PROJECT_DIR=R"($(ProjectDir))";WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4819</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(FALCOR_CORE_DIRECTORY)\Externals\.packman\libtorch\include;$(FALCOR_CORE_DIRECTORY)\Externals\.packman\libtorch\include\torch\csrc\api\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>cuda.lib;cudart.lib;c10_cuda.lib;caffe2_nvrtc.lib;cpuinfo.lib;dnnl.lib;fbgemm.lib;fmt.lib;kineto.lib;libprotobuf.lib;libprotobuf-lite.lib;libprotoc.lib;pthreadpool.lib;sleef.lib;torch.lib;torch_cpu.lib;torch_cuda.lib;XNNPACK.lib;asmjit.lib;c10.lib;-INCLUDE:?warp_size@cuda@at@@YAHXZ;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(FALCOR_CORE_DIRECTORY)\Externals\.packman\libtorch\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <AdditionalCompilerOptions>/wd4819 /wd4244 /wd4005 /wd4067 /wd4267 /wd4805 /wd4251 /wd4624 /wd4275</AdditionalCompilerOptions>
+      <AdditionalOptions>--std=c++17 %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CudaCompile Include="regression.cu" />
+    <CudaCompile Include="reproject.cu" />
+    <CudaCompile Include="cuda_utils.cuh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Falcor\Falcor.vcxproj">
+      <Project>{2c535635-e4c5-4098-a928-574f0e7cd5f9}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TorchPass.cpp" />
+    <ClCompile Include="miniz.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="ops.h" />
+    <ClInclude Include="TorchPass.h" />
+    <ClInclude Include="tinyexr.h" />
+    <ClInclude Include="miniz.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
