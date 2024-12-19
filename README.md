@@ -1,5 +1,6 @@
 # Online Neural Denoising with Cross-Regression for Interactive Rendering (interactive demo)
-![Teaser](teaser.png)
+![Teaser](teaser.jpg)
+*Figure: Mogwai with profiler.*
 
 This branch (`falcor`) contains an interactive demo for the SIGGRAPH 2024 paper, **Online Neural Denoising with Cross-Regression for Interactive Rendering**. It is based on [ReSTIR PT](https://github.com/DQLin/ReSTIR_PT), which was built on top of [Falcor](https://github.com/NVIDIAGameWorks/Falcor). If you use this project or find it useful for your research, please cite the paper.
 
@@ -26,12 +27,12 @@ This branch (`falcor`) contains an interactive demo for the SIGGRAPH 2024 paper,
 
 ## Tested Environment
 - Windows 11
-- Visual Studio 2022 (with support for Visual Studio 2019 compiler)
+- Visual Studio 2022 (with support for Visual Studio 2019 build tools)
 - CUDA 11.8
 - LibTorch 2.5.1+cu118
 - NVAPI 530
 - NVIDIA Driver 560.94
-- RTX Graphics Card (tested `RTX 4090`, `RTX 2080` and `RTX 5000 with Max-Q`)
+- RTX Graphics Card (tested `RTX 4090`, `RTX 2080 Ti` and `RTX 5000 with Max-Q`)
 
 ## Steps to Run
 1. Install `Visual Studio 2022` with the following components (or you can use the 2019 version instead):
@@ -40,17 +41,19 @@ This branch (`falcor`) contains an interactive demo for the SIGGRAPH 2024 paper,
 1. Install `CUDA 11.8`
 1. Copy the contents of the CUDA directory (`C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8`) into `(ProjectDIR)/Source/Externals/.packman/` and rename it to `cuda`
    - It should be located like this: `.packman/cuda/bin`
-1. Download `NVAPI`, `LibTorch`
+1. Download [NVAPI](https://developer.nvidia.com/rtx/path-tracing/nvapi/get-started) and [LibTorch](https://download.pytorch.org/libtorch/cu118/libtorch-win-shared-with-deps-2.5.1%2Bcu118.zip)
    - You should disable the `OptixDenoiser` project from the solution if you don't need it.
 1. Copy the directories into `(ProjectDIR)/Source/Externals/.packman/`
    - They should be located under the `.packman` directory as follows:
        - NVAPI: `.packman/nvapi/nvapi.h`, ...
        - LibTorch: `.packman/libtorch/lib`, ...
-1. Open `Falcor.sln`, set the configuration to `ReleaseD3D12`, and then try to build the solution. 
+1. Open `Falcor.sln` using Visual Studio, set the configuration to `ReleaseD3D12`, and then build the solution. 
+   - If prompted to retarget the projects, choose `No Upgrade` for both `Windows SDK` and `Platform Toolset`.
    - During the initial build, `packman` will download the necessary files required to run the project, which may take some time.
 1. Copy the following binaries to `Bin/x64/Release/`
    - Copy `python37.dll` from `Source/Externals/.packman/python/`
-   - Copy all files from `Source/Externals/.packman/libtorch/`
+   - Copy all files from `Source/Externals/.packman/libtorch/lib/`
+      - For example, `torch.dll` should be placed as `Bin/x64/Release/torch.dll`
 1. Launch the interactive demo using the following command. Ensure the scene path is set beforehand in the script (see the [Usage](#usage) section below):
    ```
    .\Bin\x64\Release\Mogwai.exe --script=main.py
